@@ -1,0 +1,26 @@
+[2025-12-06 12:20:15] [CONNEXION] [Client: 127.0.0.1:51617] Nouveau client connecte
+[2025-12-06 12:20:25] [INFO] [Client: 127.0.0.1:51617] Nombre 1 recu: 1.00
+[2025-12-06 12:20:25] [ERREUR] [Client: 127.0.0.1:51617] ERROR:Commande non reconnue: 
+[2025-12-06 12:23:35] [INFO] [Client: 127.0.0.1:51617] Nombre 2 recu: 1.00
+[2025-12-06 12:23:35] [ERREUR] [Client: 127.0.0.1:51617] ERROR:Commande non reconnue: 
+[2025-12-06 12:27:40] [DECONNEXION] [Client: 127.0.0.1:51617] Client deconnecte
+[2025-12-06 12:27:50] [CONNEXION] [Client: 127.0.0.1:58621] Nouveau client connecte
+[2025-12-06 12:28:06] [ERREUR] [Client: 127.0.0.1:58621] ERROR:Format numerique invalide: (8-2)
+[2025-12-10 15:48:15] [INFO] [Client: 127.0.0.1:58621] Nombre 1 recu: 8.00
+[2025-12-10 15:48:20] [ERREUR] [Client: 127.0.0.1:58621] ERROR:Commande non reconnue: 
+[2025-12-10 15:50:29] [ERREUR] [Client: 127.0.0.1:58621] Erreur recv: 10054
+[2025-12-10 15:55:32] [CONNEXION] [Client: 127.0.0.1:54536] Nouveau client connecte
+[2025-12-10 17:29:41] [INFO] [Client: 127.0.0.1:54536] Nombre 1 recu: 1.00
+[2025-12-10 17:29:41] [ERREUR] [Client: 127.0.0.1:54536] ERROR:Commande non reconnue: 
+[2025-12-10 17:31:47] [DECONNEXION] [Client: 127.0.0.1:54536] Client deconnecte
+[2025-12-10 17:32:04] [CONNEXION] [Client: 127.0.0.1:55407] Nouveau client connecte
+[2025-12-10 17:33:00] [INFO] [Client: 127.0.0.1:55407] Nombre 1 recu: 1.00
+[2025-12-10 17:33:00] [INFO] [Client: 127.0.0.1:55407] Nombre 2 recu: 1.00
+[2025-12-10 17:39:58] [CONNEXION] [Client: 127.0.0.1:59069] Nouveau client connecte
+[2025-12-10 17:40:10] [ERREUR] [Client: 127.0.0.1:59069] ERROR:Format numerique invalide: 1
+[2025-12-10 21:59:36] [CONNEXION] [Client: 127.0.0.1:57324] Nouveau client connecte
+[2025-12-10 21:59:40] [INFO] [Client: 127.0.0.1:57324] Nombre 1 recu: 1.00
+[2025-12-10 21:59:40] [INFO] [Client: 127.0.0.1:57324] Nombre 2 recu: 1.00
+[2025-12-10 21:59:40] [INFO] [Client: 127.0.0.1:57324] Operateur recu: +
+[2025-12-10 21:59:40] [CALCUL] [Client: 127.0.0.1:57324] 1.00 + 1.00 = 2.00
+[2025-12-13 22:13:10] [CALCUL] [Client: /127.0.0.1:57324] 5.00 - 2.0 = 3.0

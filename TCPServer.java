@@ -24,7 +24,7 @@ public class TCPServer {
                 threadPool.execute(new ClientHandler(clientSocket));
             }
         } catch (IOException e) {
-            
+            System.err.println("Erreur serveur : " + e.getMessage());
         }
     }
 

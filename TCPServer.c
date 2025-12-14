@@ -6,6 +6,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <process.h>
+#include <iphlpapi.h>
 
 #define PORT 12345
 #define BUFFER_SIZE 1024
@@ -13,6 +14,7 @@
 #define LOG_FILE "log_C.txt"
 
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "iphlpapi.lib")
 
 typedef struct {
     SOCKET client_socket;
@@ -20,6 +22,43 @@ typedef struct {
 } client_data_t;
 
 HANDLE log_mutex;
+
+void display_network_info() {
+    printf("Network interfaces available:\n");
+    
+    PIP_ADAPTER_INFO pAdapterInfo = NULL;
+    PIP_ADAPTER_INFO pAdapter = NULL;
+    ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    
+    pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+    if (pAdapterInfo == NULL) {
+        printf("Error allocating memory for adapter info\n");
+        return;
+    }
+    
+    if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+        free(pAdapterInfo);
+        pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+        if (pAdapterInfo == NULL) {
+            printf("Error allocating memory for adapter info\n");
+            return;
+        }
+    }
+    
+    if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == NO_ERROR) {
+        pAdapter = pAdapterInfo;
+        while (pAdapter) {
+            if (pAdapter->Type != MIB_IF_TYPE_LOOPBACK) {
+                printf("  %s : %s\n", pAdapter->Description, pAdapter->IpAddressList.IpAddress.String);
+            }
+            pAdapter = pAdapter->Next;
+        }
+    }
+    
+    free(pAdapterInfo);
+    printf("Clients can connect using any of these IP addresses\n");
+    printf("or use 'localhost' if on the same machine\n\n");
+}
 
 void log_message(const char* type, const char* message, struct sockaddr_in client_addr) {
     WaitForSingleObject(log_mutex, INFINITE);
@@ -35,15 +74,14 @@ void log_message(const char* type, const char* message, struct sockaddr_in clien
         ReleaseMutex(log_mutex);   
         return;
     }
-
+    
     fprintf(log_file, "[%s] [%s] [Client: %s:%d] %s\n",
             timestamp, type,
             inet_ntoa(client_addr.sin_addr),
             ntohs(client_addr.sin_port),
             message);
-
+    
     fclose(log_file);
-    ReleaseMutex(log_mutex);       
     
     printf("[%s] [%s] [Client: %s:%d] %s\n",
            timestamp, type,
@@ -141,6 +179,13 @@ unsigned __stdcall handle_client(void* arg) {
     SOCKET client_socket = client_data->client_socket;
     struct sockaddr_in client_addr = client_data->client_addr;
     
+    char client_info[50];
+    snprintf(client_info, sizeof(client_info), "%s:%d",
+             inet_ntoa(client_addr.sin_addr),
+             ntohs(client_addr.sin_port));
+    
+    log_message("CONNEXION", "Nouveau client connecte", client_addr);
+    
     char buffer[BUFFER_SIZE];
     char response[BUFFER_SIZE];
     char value[100];
@@ -148,8 +193,6 @@ unsigned __stdcall handle_client(void* arg) {
     double num1 = 0, num2 = 0;
     char operator = 0;
     int step = 0;
-    
-    log_message("CONNEXION", "Nouveau client connecte", client_addr);
     
     while (1) {
         memset(buffer, 0, BUFFER_SIZE);
@@ -267,6 +310,7 @@ unsigned __stdcall handle_client(void* arg) {
         }
     }
     
+    printf("Client %s deconnecte\n", client_info);
     closesocket(client_socket);
     free(client_data);
     
@@ -281,16 +325,20 @@ int main() {
     int client_addr_len = sizeof(client_addr);
     int iResult;
     
-    printf("TCP SERVER\n");
+    printf("╔══════════════════════════════════════╗\n");
+    printf("║           TCP SERVER C              ║\n");
+    printf("╚══════════════════════════════════════╝\n");
     printf("Port: %d\n", PORT);
     printf("Log file: %s\n", LOG_FILE);
-    printf("Waiting for clients...\n");
+    printf("\n");
     
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
         printf("Erreur WSAStartup: %d\n", iResult);
         return 1;
     }
+    
+    display_network_info();
     
     log_mutex = CreateMutex(NULL, FALSE, NULL);
     if (log_mutex == NULL) {
@@ -305,6 +353,11 @@ int main() {
         CloseHandle(log_mutex);
         WSACleanup();
         return 1;
+    }
+    
+    int opt = 1;
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt)) < 0) {
+        printf("Warning: setsockopt SO_REUSEADDR failed\n");
     }
     
     memset(&server_addr, 0, sizeof(server_addr));
@@ -330,8 +383,9 @@ int main() {
         return 1;
     }
     
-    printf("Server waiting for client connexion...\n");
-    printf("Ctrl+C to stop the server\n\n");
+    printf("Server listening on port %d...\n", PORT);
+    printf("Waiting for client connections...\n");
+    printf("Press Ctrl+C to stop the server\n\n");
     
     while (1) {
         SOCKET client_socket = accept(server_socket, 

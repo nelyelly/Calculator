@@ -4,7 +4,6 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#define SERVER_ADDRESS "localhost"
 #define SERVER_PORT 12345
 #define BUFFER_SIZE 1024
 
@@ -41,8 +40,15 @@ int read_line(SOCKET sock, char* buffer, int buffer_size) {
 }
 
 int main() {
+    char server_ip[100] = "localhost";
+    
     printf("Compute Client TCP\n");
-    printf("Connection to server %s:%d\n", SERVER_ADDRESS, SERVER_PORT);
+    printf("===================\n");
+    printf("Enter server IP (or 'localhost' for local): ");
+    scanf("%99s", server_ip);
+    getchar();
+    
+    printf("Connection to server %s:%d\n", server_ip, SERVER_PORT);
     
     WSADATA wsaData;
     SOCKET sock = INVALID_SOCKET;
@@ -67,14 +73,17 @@ int main() {
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(SERVER_PORT);
     
-    if (strcmp(SERVER_ADDRESS, "localhost") == 0) {
+    if (strcmp(server_ip, "localhost") == 0) {
         serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     } else {
-        serv_addr.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
+        serv_addr.sin_addr.s_addr = inet_addr(server_ip);
         if (serv_addr.sin_addr.s_addr == INADDR_NONE) {
-            struct hostent *host = gethostbyname(SERVER_ADDRESS);
+            struct hostent *host = gethostbyname(server_ip);
             if (host == NULL) {
-                printf(" Impossible de resoudre %s\n", SERVER_ADDRESS);
+                printf(" Impossible de resoudre %s\n", server_ip);
+                printf(" Verifiez:\n");
+                printf("  1. L'adresse est correcte\n");
+                printf("  2. Vous etes connecte au meme reseau\n");
                 closesocket(sock);
                 WSACleanup();
                 return 1;
@@ -83,17 +92,21 @@ int main() {
         }
     }
     
-    printf("Connected to server\n");
+    printf("Tentative de connexion...\n");
     iResult = connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     if (iResult == SOCKET_ERROR) {
         printf(" Impossible de se connecter: %ld\n", WSAGetLastError());
-        printf("Verifiez que le serveur est lance sur le port %d\n", SERVER_PORT);
+        printf("Verifiez que:\n");
+        printf("  1. Le serveur est lance\n");
+        printf("  2. Le port %d est ouvert sur le serveur\n", SERVER_PORT);
+        printf("  3. Le pare-feu autorise les connexions\n");
         closesocket(sock);
         WSACleanup();
         return 1;
     }
-
     
+    printf("Connected to server!\n\n");
+
     while (1) {
         char input1[50], input2[50], op[10];
         char send_buffer[100];
@@ -153,7 +166,7 @@ int main() {
         }
     }
     
-    printf("\nD\n");
+    printf("\nDeconnexion...\n");
     closesocket(sock);
     WSACleanup();
     
